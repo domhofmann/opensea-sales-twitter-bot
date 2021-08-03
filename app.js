@@ -42,7 +42,7 @@ setInterval(() => {
     }).then((response) => {
         const events = _.get(response, ['data', 'asset_events']);
 
-        console.log(`${events.length} sales in the last minute...`);
+        console.log(`${events.length} sales in the last minute for ${process.env.OPENSEA_COLLECTION_SLUG}...`);
 
         _.each(events, (event) => {
             return formatAndSendTweet(event);
