@@ -11,16 +11,18 @@ function formatAndSendTweet(event) {
     const totalPrice = _.get(event, 'total_price');
     const usdValue = _.get(event, ['payment_token', 'usd_price']);
     const tokenSymbol = _.get(event, ['payment_token', 'symbol']);
+    const buyer = _.get(event, ['winner_account', 'user', 'username'], 'Anonymous');
+    const seller = _.get(event, ['seller', 'user', 'username'], 'Anonymous');
 
     const formattedTokenPrice = ethers.utils.formatEther(totalPrice.toString());
-    const formattedUsdPrice = (formattedTokenPrice * usdValue).toFixed(2);
+    const formattedUsdPrice = (formattedTokenPrice * usdValue).toFixed(2).toLocaleString();
     const formattedPriceSymbol = (
         (tokenSymbol === 'WETH' || tokenSymbol === 'ETH') 
-            ? 'Ξ' 
+            ? ' ETH' 
             : ` ${tokenSymbol}`
     );
 
-    const tweetText = `${tokenName} bought for ${formattedTokenPrice}${formattedPriceSymbol} ($${formattedUsdPrice}) #NFTs ${openseaLink}`;
+    const tweetText = `${tokenName} bought by for ${formattedTokenPrice}${formattedPriceSymbol} ($${formattedUsdPrice}) by ${buyer} from ${seller} ${openseaLink}`;
 
     console.log(tweetText);
 
