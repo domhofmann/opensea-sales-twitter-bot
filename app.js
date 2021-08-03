@@ -15,14 +15,14 @@ function formatAndSendTweet(event) {
     const seller = _.get(event, ['seller', 'user', 'username'], 'Anonymous');
 
     const formattedTokenPrice = ethers.utils.formatEther(totalPrice.toString());
-    const formattedUsdPrice = (formattedTokenPrice * usdValue).toFixed(2).toLocaleString();
+    const formattedUsdPrice = (formattedTokenPrice * usdValue).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     const formattedPriceSymbol = (
         (tokenSymbol === 'WETH' || tokenSymbol === 'ETH') 
-            ? ' ETH' 
-            : ` ${tokenSymbol}`
+            ? 'ETH' 
+            : `${tokenSymbol}`
     );
 
-    const tweetText = `${tokenName} bought by for ${formattedTokenPrice}${formattedPriceSymbol} ($${formattedUsdPrice}) by ${buyer} from ${seller} ${openseaLink}`;
+    const tweetText = `${tokenName} bought for ${formattedTokenPrice} ${formattedPriceSymbol} ($${formattedUsdPrice}) by ${buyer} from ${seller} ${openseaLink}`;
 
     console.log(tweetText);
 
