@@ -29,6 +29,53 @@ function formatAndSendTweet(event) {
     return tweet.handleDupesAndTweet(tokenName, tweetText, image);
 }
 
+async function formatAndSendAuctionTweet(bid, exchangeRate) {
+    const query = `
+    {
+        blitmaps(where: {id: ${bid['tokenId']}}) {
+            id
+            name
+            owner
+            creator
+            creatorName
+            parents
+            isOriginal
+            remainingVariants
+            tokenID
+            slabs
+            affinity
+        }
+    }
+    `;
+
+    var response;
+    try {
+        response = await axios.post('https://api.thegraph.com/subgraphs/name/domhofmann/blitmap', {
+            query: query
+        });
+    } catch {
+        return;
+    }
+    const blip = response.data.data.blitmaps[0];
+
+    const tokenName = `#${blip.tokenID} - ${blip.name}`;
+    const image = `https://api.blitmap.com/v1/png/${blip.tokenID}`;
+    const openseaLink = `https://blit.house/0x8d04a8c79cEB0889Bdd12acdF3Fa9D207eD3Ff63/${bid['tokenId']}`;
+    const usdValue = parseFloat(exchangeRate);
+
+    const formattedTokenPrice = ethers.utils.formatEther(bid['value'].toString());
+    const formattedUsdPrice = (formattedTokenPrice * usdValue).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const formattedPriceSymbol = 'ETH'
+
+    const tweetText = `${tokenName} received a bid of ${formattedTokenPrice} ${formattedPriceSymbol} ($${formattedUsdPrice}) ${openseaLink}`;
+
+    // console.log(tweetText, image);
+
+    return tweet.handleDupesAndTweet(tokenName, tweetText, image);
+}
+
+var exchangeRate = 0;
+
 // Poll OpenSea every minute & retrieve all sales for a given collection in the last minute
 // Then pass those events over to the formatter before tweeting
 setInterval(() => {
@@ -49,6 +96,26 @@ setInterval(() => {
         _.each(events, (event) => {
             return formatAndSendTweet(event);
         });
+    }).catch((error) => {
+        console.error(error);
+    });
+
+    axios.get('https://api.coinbase.com/v2/exchange-rates?currency=ETH')
+    .then((response) => {
+        exchangeRate = _.get(response, ['data', 'data', 'rates', 'USD']);
+
+        axios.post('https://indexer-dev-mainnet.hasura.app/api/rest/auction-activity', {
+            address: '0x8d04a8c79cEB0889Bdd12acdF3Fa9D207eD3Ff63',
+            start: moment().startOf('minute').subtract(8, "minutes").toISOString()
+        }).then((response) => {
+            const bids = _.get(response, ['data', 'AuctionBidEvent']);
+            _.each(bids, (bid) => {
+                return formatAndSendAuctionTweet(bid, exchangeRate);
+            });
+        }).catch((error) => {
+            console.error(error);
+        });
+
     }).catch((error) => {
         console.error(error);
     });
