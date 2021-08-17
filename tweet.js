@@ -29,10 +29,9 @@ async function handleDupesAndTweet(tokenName, tweetText, imageUrl) {
 
             const mostRecentMatchingTweetCreatedAt = _.get(statuses[0], 'created_at');
             const statusOlderThan10Mins = moment(mostRecentMatchingTweetCreatedAt).isBefore(moment().subtract(10, 'minutes'));
-            const userIsNotUs = _.get(statuses[0], ['user', 'screen_name']) != 'blitbot';
 
             // Status found is older than 10 minutes, not a cached transaction, just sold at same price
-            if (statusOlderThan10Mins || userIsNotUs) {
+            if (statusOlderThan10Mins) {
                 console.log('Previous status is older than 10 minutes, continuing to tweet...');
 
                 return tweet(tweetText, imageUrl);
