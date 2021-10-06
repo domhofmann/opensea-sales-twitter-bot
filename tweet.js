@@ -16,7 +16,7 @@ const twitterClient = new twit(twitterConfig);
 // Occasionaly in the split second of delay, dupelicates are retrieved - filter them out here
 async function handleDupesAndTweet(tokenName, tweetText, imageUrl) {
     // Search our twitter account's recent tweets for anything exactly matching our new tweet's text
-    twitterClient.get('search/tweets', { q: tokenName, count: 1, result_type: 'recent' }, (error, data, response) => {
+    twitterClient.get('search/tweets', { q: `(from:blitbot) ${tokenName}`, count: 1, result_type: 'recent' }, (error, data, response) => {
         if (!error) {
             const statuses = _.get(data, 'statuses');
 
