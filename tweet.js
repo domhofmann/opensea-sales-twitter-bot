@@ -68,6 +68,10 @@ async function tweet(tweetText, imageUrl) {
             console.error(error);
         }
     });
+    
+    axios.post(process.env.DISCORD_WEBHOOK, {
+        content: tweetText
+    });
 }
 
 // Format a provided URL into it's base64 representation
